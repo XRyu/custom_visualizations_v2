@@ -208,7 +208,7 @@ const vis: LiquidFillGaugeVisualization = {
     this.svg.attr('id', elementId)
   },
   // Render in response to the data or settings changing
-  update(data, element, config, queryResponse) {
+  update(data, element, config, queryResponse, details) {
     if (!handleErrors(this, queryResponse, {
       min_pivots: 0, max_pivots: 0,
       min_dimensions: 0, max_dimensions: undefined,
@@ -221,6 +221,9 @@ const vis: LiquidFillGaugeVisualization = {
     if (this.addError && this.clearErrors) {
       if (gaugeConfig.maxValue <= 0) {
         this.addError({ group: 'config', title: 'Max value must be greater than zero.' })
+        return
+      } else if (data.length === 0) {
+        this.addError({ title: 'No results.' })
         return
       } else {
         this.clearErrors('config')
@@ -246,6 +249,16 @@ const vis: LiquidFillGaugeVisualization = {
     this.svg.attr('width', element.clientWidth - 20)
     this.svg.attr('height', element.clientHeight - 20)
 
+    // @ts-ignore
+    if (details['print']) {
+      Object.assign(gaugeConfig, {
+        valueCountUp: false,
+        waveAnimateTime: 0,
+        waveRiseTime: 0,
+        waveAnimate: false,
+        waveRise: false
+      })
+    }
     // @ts-ignore
     d3.liquidfillgauge(this.svg, value, gaugeConfig)
 
