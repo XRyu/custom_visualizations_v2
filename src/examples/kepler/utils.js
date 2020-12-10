@@ -1,3 +1,5 @@
+import get from 'lodash.get'
+
 import { processGeojson } from 'kepler.gl/processors'
 
 const MAX_LATITUDE = 90
@@ -87,12 +89,7 @@ async function parseGbfsFeed(datasets, url) {
   const response = await fetch(url, { cors: true })
   const gbfsJson = await response.json()
   console.log(`Got GBFS data for ${url}:`, gbfsJson)
-  if (
-    gbfsJson.hasOwnProperty('data') &&
-    gbfsJson.data.hasOwnProperty('geofencing_zones') &&
-    gbfsJson.data.geofencing_zones.hasOwnProperty('features') &&
-    gbfsJson.data.geofencing_zones.features.length > 0
-  ) {
+  if (get(gbfsJson, 'data.geofencing_zones.features.length', 0) > 0) {
     datasets.push({
       info: {
         label: `Geofencing zones ${url}`,
@@ -114,11 +111,7 @@ async function parseGbfsFeed(datasets, url) {
         }),
       }),
     })
-  } else if (
-    gbfsJson.hasOwnProperty('data') &&
-    gbfsJson.data.hasOwnProperty('regions') &&
-    gbfsJson.data.regions.length > 0
-  ) {
+  } else if (get(gbfsJson, 'data.regions.length', 0) > 0) {
     datasets.push({
       info: {
         label: `Service areas ${url}`,
@@ -141,11 +134,7 @@ async function parseGbfsFeed(datasets, url) {
         }),
       }),
     })
-  } else if (
-    gbfsJson.hasOwnProperty('data') &&
-    gbfsJson.data.hasOwnProperty('stations') &&
-    gbfsJson.data.stations.length > 0
-  ) {
+  } else if (get(gbfsJson, 'data.stations.length', 0) > 0) {
     datasets.splice(0, 0, {
       info: {
         label: `Stations ${url}`,
@@ -177,12 +166,7 @@ async function parseGbfsFeed(datasets, url) {
         }),
       }),
     })
-  } else if (
-    gbfsJson.hasOwnProperty('data') &&
-    gbfsJson.data.hasOwnProperty('en') &&
-    gbfsJson.data.en.hasOwnProperty('feeds') &&
-    gbfsJson.data.en.feeds.length > 0
-  ) {
+  } else if (get(gbfsJson, 'data.en.feeds.length', 0) > 0) {
     return Promise.all(
       gbfsJson.data.en.feeds.map(async (feed) => {
         if (feed.hasOwnProperty('url')) {

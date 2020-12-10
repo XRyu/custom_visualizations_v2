@@ -47,7 +47,7 @@ const options = {
     type: 'array',
     label: 'GBFS feeds to load as GeoJSON FeatureCollections',
     placeholder: 'List of HTTPS URLs separated with comma',
-    default: ['https://gbfs.basis-development.bike/v2/gbfs.json'],
+    default: ['https://gbfs.beryl.cc/v2/gbfs.json'],
   },
 }
 
