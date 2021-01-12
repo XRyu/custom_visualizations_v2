@@ -3,6 +3,15 @@
 This custom Looker visualization integrates the Kepler.gl mapping library, which enables large-scale
 visualization of geo-data.
 
+## Installation
+
+The plugin can be installed by adding a new Visualization under Admin / Platform / Visualizations.
+
+The `main` form field is the URL to load the plugin from, in case of hosting on Github you can use:
+https://rawcdn.githack.com/team-blaze/custom_visualizations_v2/79b96adb4ee1c7e74f49ff81f3c8184d1c4c51fa/dist/kepler.js
+
+Where the hash is the commit hash. To update the plugin to a newer version, just overwrite the hash.
+
 ## Settings in Kepler
 
 Since there are a lot of options for customisation in Kepler on top of the dataset injected into it,

@@ -47,20 +47,7 @@ const options = {
     type: 'array',
     label: 'GBFS feeds to load as GeoJSON FeatureCollections',
     placeholder: 'List of HTTPS URLs separated with comma',
-    default: [
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/BCP/station_information.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/BCP/system_regions.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Hereford/station_information.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Hereford/system_regions.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/London/station_information.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/London/system_regions.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Watford/station_information.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Watford/system_regions.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Norwich/station_information.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Norwich/system_regions.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Staten Island/station_information.json',
-      'https://storage.googleapis.com/gbfs.basis-pdn.bike/Staten Island/system_regions.json',
-    ],
+    default: ['https://gbfs.beryl.cc/v2/gbfs.json'],
   },
 }
 

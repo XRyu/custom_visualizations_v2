@@ -338,7 +338,7 @@ class Map extends Component {
       }
     } else {
       console.log(
-        `not applying loaded config as one of the conditions weren't met`,
+        `not applying loaded config as at least one of the conditions weren't met`,
         'currentSerialisedKeplerMapConfig',
         !!currentSerialisedKeplerMapConfig,
         'previousColumnsHeaders',

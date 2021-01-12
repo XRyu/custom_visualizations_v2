@@ -1,3 +1,5 @@
+import get from 'lodash.get'
+
 import { processGeojson } from 'kepler.gl/processors'
 
 const MAX_LATITUDE = 90
@@ -80,6 +82,107 @@ export function enrichLinestringFeatureToTrip(feature) {
   }
 }
 
+// Taking the `datasets` Array and mutating them in a function isn't great, but we're processing
+// feeds in parallel, some items are inserted at the beginning, parsing performance matters and with
+// index feeds we need to go recursive...
+async function parseGbfsFeed(datasets, url) {
+  const response = await fetch(url, { cors: true })
+  const gbfsJson = await response.json()
+  console.log(`Got GBFS data for ${url}:`, gbfsJson)
+  if (get(gbfsJson, 'data.geofencing_zones.features.length', 0) > 0) {
+    datasets.push({
+      info: {
+        label: `Geofencing zones ${url}`,
+        id: `GBFS_Geofencing_zones_${murmur_hash(url)}`,
+      },
+      data: processGeojson({
+        type: 'FeatureCollection',
+        features: gbfsJson.data.geofencing_zones.features.map((zone) => {
+          const { geometry, properties } = zone
+          return {
+            type: 'Feature',
+            geometry,
+            properties: {
+              id: properties.name,
+              fillColor: [0, 0, 0, 0],
+              lineColor: [200, 0, 0],
+            },
+          }
+        }),
+      }),
+    })
+  } else if (get(gbfsJson, 'data.regions.length', 0) > 0) {
+    datasets.push({
+      info: {
+        label: `Service areas ${url}`,
+        id: `GBFS_Service_areas_${murmur_hash(url)}`,
+      },
+      data: processGeojson({
+        type: 'FeatureCollection',
+        features: gbfsJson.data.regions.map((region) => {
+          const { region_id, geom, ...properties } = region
+          return {
+            type: 'Feature',
+            geometry: geom,
+            properties: {
+              ...properties,
+              id: region_id,
+              fillColor: [0, 0, 0, 0],
+              lineColor: [200, 0, 0],
+            },
+          }
+        }),
+      }),
+    })
+  } else if (get(gbfsJson, 'data.stations.length', 0) > 0) {
+    datasets.splice(0, 0, {
+      info: {
+        label: `Stations ${url}`,
+        id: `${GBFS_STATION_ID_PREFIX}${murmur_hash(url)}`,
+      },
+      data: processGeojson({
+        type: 'FeatureCollection',
+        features: gbfsJson.data.stations.map((station) => {
+          const { station_id, lat, lon, ...properties } = station
+          return {
+            type: 'Feature',
+            // geometry: {
+            //   type: "Polygon",
+            //   coordinates: [h3ToGeoBoundary(geoToH3(lat, lon, 11), true)]
+            // },
+            geometry: {
+              type: 'Point',
+              coordinates: [lon, lat],
+            },
+            properties: {
+              ...properties,
+              id: station_id,
+              fillColor: [0, 0, 0, 0],
+              radius: 30,
+              lineColor: [200, 0, 0],
+              lineWidth: 1,
+            },
+          }
+        }),
+      }),
+    })
+  } else if (get(gbfsJson, 'data.en.feeds.length', 0) > 0) {
+    return Promise.all(
+      gbfsJson.data.en.feeds.map(async (feed) => {
+        if (feed.hasOwnProperty('url')) {
+          return parseGbfsFeed(datasets, feed.url)
+        }
+      }),
+    )
+  } else {
+    console.warn(
+      'Only "gbfs" index, "geofencing_zones", "regions" and "stations" GBFS feeds are supported, ' +
+        'but got: ',
+      gbfsJson,
+    )
+  }
+}
+
 export async function loadGbfsFeedsAsKeplerDatasets(urls) {
   if (!Array.isArray(urls)) {
     console.error('Invalid GBFS feed URLs (should be an Array of Strings):', urls)
@@ -89,80 +192,9 @@ export async function loadGbfsFeedsAsKeplerDatasets(urls) {
   const datasets = []
   // Using Promise.all to make requests happen in parallel
   await Promise.all(
-    urls.map(async (url, index) => {
+    urls.map(async (url) => {
       try {
-        const response = await fetch(url, { cors: true })
-        const body = await response.json()
-        console.log(`Got GBFS data for ${url}:`, body)
-        if (
-          body.hasOwnProperty('data') &&
-          body.data.hasOwnProperty('regions') &&
-          body.data.regions.length > 0
-        ) {
-          datasets.push({
-            info: {
-              label: `Service areas ${body.data.regions[0].name || url}`,
-              id: `GBFS_Service_areas_${index}`,
-            },
-            data: processGeojson({
-              type: 'FeatureCollection',
-              features: body.data.regions.map((region) => {
-                const { region_id, geom, ...properties } = region
-                return {
-                  type: 'Feature',
-                  geometry: geom,
-                  properties: {
-                    ...properties,
-                    id: region_id,
-                    fillColor: [0, 0, 0, 0],
-                    lineColor: [200, 0, 0],
-                  },
-                }
-              }),
-            }),
-          })
-        } else if (
-          body.hasOwnProperty('data') &&
-          body.data.hasOwnProperty('stations') &&
-          body.data.stations.length > 0
-        ) {
-          datasets.splice(0, 0, {
-            info: {
-              label: `Stations ${url}`,
-              id: `${GBFS_STATION_ID_PREFIX}${index}`,
-            },
-            data: processGeojson({
-              type: 'FeatureCollection',
-              features: body.data.stations.map((station) => {
-                const { station_id, lat, lon, ...properties } = station
-                return {
-                  type: 'Feature',
-                  // geometry: {
-                  //   type: "Polygon",
-                  //   coordinates: [h3ToGeoBoundary(geoToH3(lat, lon, 11), true)]
-                  // },
-                  geometry: {
-                    type: 'Point',
-                    coordinates: [lon, lat],
-                  },
-                  properties: {
-                    ...properties,
-                    id: station_id,
-                    fillColor: [0, 0, 0, 0],
-                    radius: 30,
-                    lineColor: [200, 0, 0],
-                    lineWidth: 1,
-                  },
-                }
-              }),
-            }),
-          })
-        } else {
-          console.warn(
-            'Only "regions" and "stations" GBFS feeds are supported, but got: ',
-            body.data,
-          )
-        }
+        await parseGbfsFeed(datasets, url)
       } catch (e) {
         console.error('Could not load GBFS feed, error: ', e)
         return null
@@ -182,4 +214,18 @@ export function mergeArrayProperties(objValue, srcValue) {
     Array.prototype.push.apply(objValue, srcValue)
     return objValue
   }
+}
+
+// Murmur-like hashing script, thanks https://stackoverflow.com/a/52171480/21217
+export function murmur_hash(str, seed = 7) {
+  let h1 = 0xdeadbeef ^ seed,
+    h2 = 0x41c6ce57 ^ seed
+  for (let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i)
+    h1 = Math.imul(h1 ^ ch, 2654435761)
+    h2 = Math.imul(h2 ^ ch, 1597334677)
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0)
 }
