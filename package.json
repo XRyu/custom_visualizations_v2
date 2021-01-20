@@ -9,8 +9,8 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "NODE_ENV=production webpack --config webpack.config.js",
-    "watch": "NODE_ENV=development webpack --config webpack.config.js --watch --progress",
+    "build": "cross-env NODE_ENV=production webpack --config webpack.config.js",
+    "watch": "cross-env NODE_ENV=development webpack --config webpack.config.js --watch --progress",
     "start": "webpack-dev-server",
     "lint": "tslint --project tsconfig.json --format stylish 'src/**/*.ts'",
     "lint-fix": "tslint --fix --project tsconfig.json  --format stylish 'src/**/*.ts'",
@@ -23,10 +23,8 @@
     "@babel/plugin-proposal-class-properties": "^7.7.0",
     "@babel/preset-env": "^7.7.1",
     "@babel/preset-react": "^7.7.0",
-    "@types/d3": "^5.0.0",
-    "@types/d3-sankey": "^0.7.4",
-    "@types/jquery": "^3.3.31",
     "babel-loader": "^8.0.6",
+    "cross-env": "^7.0.3",
     "css-loader": "^0.28.11",
     "jest": "^24.9.0",
     "jsdom": "^11.11.0",
@@ -40,19 +38,14 @@
     "webpack-dev-server": "3.9.0"
   },
   "dependencies": {
-    "d3": "^4.8.0",
-    "d3-sankey": "^0.10.4",
-    "jquery": "^3.3.1",
-    "kepler.gl": "^2.3.0",
-    "lodash.debounce": "^4.0.8",
-    "lodash.isequal": "^4.5.0",
-    "lodash.mergewith": "^4.6.2",
-    "pako": "^1.0.10",
-    "pivottable": "^2.20.0",
-    "react": "^16.11.0",
-    "react-dom": "^16.11.0",
+    "@deck.gl/core": "^8.3.14",
+    "@deck.gl/layers": "^8.3.14",
+    "@deck.gl/react": "^8.3.14",
+    "@loaders.gl/core": "^2.3.9",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-map-gl": "^6.0.3",
     "react-responsive-carousel": "^3.1.51",
-    "styled-components": "^4.4.1",
-    "subtotal-multiple-aggregates": "4mile/subtotal-multiple-aggregates"
+    "styled-components": "^4.4.1"
   }
 }

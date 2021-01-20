@@ -3,7 +3,7 @@ const path = require('path')
 const webpackConfig = {
   mode: process.env.NODE_ENV || 'development',
   entry: {
-    kepler: './src/examples/kepler/kepler.js',
+    deckgl: './src/examples/deckgl/deckgl.js',
   },
   output: {
     filename: '[name].js',
