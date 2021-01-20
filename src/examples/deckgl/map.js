@@ -37,14 +37,13 @@ export default class Map extends Component {
   render() {
     return (
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
         controller={true}
         layers={layers}
         id="map"
         width={this.props.width}
         height={this.props.height}
       >
-        <StaticMap mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN} />
+        <StaticMap mapboxApiAccessToken={this.props.token} />
       </DeckGL>
     )
   }
